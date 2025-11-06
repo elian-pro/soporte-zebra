@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Zebra - Asistente IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        /* Personalización del chat N8N */
+        :root {
+            --chat--color-dark: #000000 !important;
+            --chat--color-white: #ffffff !important;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Header con logo */
+        .header {
+            width: 100%;
+            background: #000000;
+            color: white;
+            padding: 20px 40px;
+            border-bottom: 3px solid #000000;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-container img {
+            height: 50px;
+        }
+
+        .logo-container h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        /* Contenedor del chat */
+        .chat-container {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 110px);
+            background: #f8f9fa;
+            position: relative;
+        }
+
+        #n8n-chat {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .logo-container img {
+                height: 40px;
+            }
+
+            .logo-container h1 {
+                font-size: 20px;
+            }
+
+            .chat-container {
+                height: calc(100vh - 95px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 15px;
+            }
+
+            .logo-container img {
+                height: 35px;
+            }
+
+            .logo-container h1 {
+                font-size: 18px;
+            }
+
+            .chat-container {
+                height: calc(100vh - 85px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header con logo -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="Logo_Zebra_Blanco.png" alt="Zebra">
+                <h1>Asistente Virtual IA</h1>
+            </div>
+        </div>
+
+        <!-- Chat ocupando toda la página -->
+        <div class="chat-container">
+            <div id="n8n-chat"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+        
+        let chatInstance = null;
+
+        function inicializarChat() {
+            console.log('Inicializando chat...');
+            
+            const chatContainer = document.getElementById('n8n-chat');
+            if (!chatContainer) {
+                console.error('No se encontró el contenedor #n8n-chat');
+                return;
+            }
+
+            // Limpiar contenedor
+            chatContainer.innerHTML = '';
+
+            try {
+                chatInstance = createChat({
+                    webhookUrl: 'https://n8n-n8n.9qd6cz.easypanel.host/webhook/046c6e65-7720-4b58-8667-ebbc109ff0ae/chat',
+                    target: '#n8n-chat',
+                    mode: 'fullscreen',
+                    chatInputKey: 'chatInput',
+                    showWelcomeScreen: true,
+                    defaultLanguage: 'es',
+                    i18n: {
+                        es: {
+                            title: 'Asistente Virtual',
+                            subtitle: 'Estoy aquí para ayudarte',
+                            footer: '',
+                            getStarted: 'Iniciar conversación',
+                            inputPlaceholder: 'Escribe tu mensaje...'
+                        }
+                    }
+                });
+                
+                console.log('✅ Chat creado exitosamente');
+            } catch (error) {
+                console.error('❌ Error al crear el chat:', error);
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inicializarChat);
+        } else {
+            inicializarChat();
+        }
+    </script>
+</body>
+</html>
