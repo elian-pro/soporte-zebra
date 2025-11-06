@@ -155,7 +155,15 @@
                     target: '#n8n-chat',
                     mode: 'fullscreen',
                     chatInputKey: 'chatInput',
-                    showWelcomeScreen: true,
+                    initialMessages: [
+                        {
+                            id: '1',
+                            text: 'Hola, ¿en qué puedo ayudarte?',
+                            sender: 'bot',
+                            createdAt: new Date().toISOString()
+                        }
+                    ],
+                    showWelcomeScreen: false,
                     defaultLanguage: 'es',
                     i18n: {
                         es: {
