@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chat Zebra - Asistente IA</title>
     <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <style>
@@ -10,6 +10,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         html, body {
@@ -18,6 +19,8 @@
             font-family: Arial, sans-serif;
             overflow: hidden;
             background: #ffffff;
+            position: fixed;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Personalización del chat N8N */
@@ -31,6 +34,10 @@
             flex-direction: column;
             width: 100%;
             height: 100vh;
+            height: 100dvh; /* Altura dinámica para móviles */
+            position: fixed;
+            top: 0;
+            left: 0;
         }
 
         /* Header con logo */
@@ -38,24 +45,26 @@
             width: 100%;
             background: #000000;
             color: white;
-            padding: 20px 40px;
+            padding: 15px 20px;
             border-bottom: 3px solid #000000;
             text-align: center;
+            flex-shrink: 0;
+            z-index: 100;
         }
 
         .logo-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .logo-container img {
-            height: 50px;
+            height: 40px;
         }
 
         .logo-container h1 {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 600;
             color: #ffffff;
             margin: 0;
@@ -65,9 +74,9 @@
         .chat-container {
             flex: 1;
             width: 100%;
-            height: calc(100vh - 110px);
-            background: #f8f9fa;
             position: relative;
+            overflow: hidden;
+            min-height: 0;
         }
 
         #n8n-chat {
@@ -76,30 +85,62 @@
             position: absolute;
             top: 0;
             left: 0;
+            overflow: hidden;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        /* Optimizaciones para el input en móviles */
+        #n8n-chat input,
+        #n8n-chat textarea {
+            font-size: 16px !important; /* Evita zoom en iOS */
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 0;
+        }
+
+        /* Prevenir scroll del body cuando el teclado está abierto */
+        body.keyboard-open {
+            position: fixed;
+            width: 100%;
+        }
+
+        /* Desktop */
+        @media (min-width: 769px) {
             .header {
-                padding: 15px 20px;
+                padding: 20px 40px;
             }
 
             .logo-container img {
-                height: 40px;
+                height: 50px;
+            }
+
+            .logo-container h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* Tablets */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .header {
+                padding: 15px 25px;
+            }
+
+            .logo-container img {
+                height: 45px;
             }
 
             .logo-container h1 {
                 font-size: 20px;
             }
-
-            .chat-container {
-                height: calc(100vh - 95px);
-            }
         }
 
+        /* Móviles pequeños */
         @media (max-width: 480px) {
             .header {
                 padding: 12px 15px;
+            }
+
+            .logo-container {
+                gap: 5px;
             }
 
             .logo-container img {
@@ -107,11 +148,14 @@
             }
 
             .logo-container h1 {
-                font-size: 18px;
+                font-size: 16px;
             }
+        }
 
-            .chat-container {
-                height: calc(100vh - 85px);
+        /* Fix para iOS Safari */
+        @supports (-webkit-touch-callout: none) {
+            .main-container {
+                height: -webkit-fill-available;
             }
         }
     </style>
@@ -136,6 +180,42 @@
         import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
         
         let chatInstance = null;
+
+        // Prevenir zoom en iOS cuando se enfoca un input
+        function preventerZoomIOS() {
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            if (viewportMeta) {
+                viewportMeta.setAttribute('content', 
+                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+                );
+            }
+        }
+
+        // Manejar el teclado en móviles
+        function manejarTecladoMovil() {
+            let originalHeight = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                const currentHeight = window.innerHeight;
+                
+                // Si la altura se reduce significativamente, el teclado está abierto
+                if (currentHeight < originalHeight * 0.75) {
+                    document.body.classList.add('keyboard-open');
+                } else {
+                    document.body.classList.remove('keyboard-open');
+                    originalHeight = currentHeight;
+                }
+            });
+
+            // Prevenir scroll cuando el input está enfocado
+            document.addEventListener('focusin', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            });
+        }
 
         function inicializarChat() {
             console.log('Inicializando chat...');
@@ -181,6 +261,10 @@
                 console.error('❌ Error al crear el chat:', error);
             }
         }
+
+        // Inicializar optimizaciones móviles
+        preventerZoomIOS();
+        manejarTecladoMovil();
 
         // Inicializar cuando el DOM esté listo
         if (document.readyState === 'loading') {
